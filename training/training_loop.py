@@ -23,6 +23,7 @@ from torch_utils.ops import grid_sample_gradfix
 
 import legacy
 from metrics import metric_main
+from training import misc as tmisc
 
 #----------------------------------------------------------------------------
 
@@ -152,6 +153,24 @@ def training_loop(
     G_ema = copy.deepcopy(G).eval()
 
     # Resume from existing pickle.
+    """
+    Updated for easier resumability
+    """
+
+    if resume_pkl == 'latest':
+        out_dir = tmisc.get_parent_dir(run_dir)
+        resume_pkl = tmisc.locate_latest_pkl(out_dir)
+    
+    resume_kimg = tmisc.parse_kimg_from_network_name(resume_pkl)
+    if resume_kimg > 0:
+        print('Resuming from kimg =', resume_kimg)
+
+    if ada_target is not None and augment_p == 0:
+        # overwrite augment_p if not fixed by user
+        augment_p = tmisc.parse_augment_p_from_log(resume_pkl)
+        if augment_p > 0:
+            print('Resuming with augment_p =', augment_p)
+
     if (resume_pkl is not None) and (rank == 0):
         print(f'Resuming from "{resume_pkl}"')
         with dnnlib.util.open_url(resume_pkl) as f:
@@ -246,13 +265,13 @@ def training_loop(
         print(f'Training for {total_kimg} kimg...')
         print()
     cur_nimg = 0
-    cur_tick = 0
+    cur_tick = int(resume_kimg * 1000)
     tick_start_nimg = cur_nimg
     tick_start_time = time.time()
     maintenance_time = tick_start_time - start_time
     batch_idx = 0
     if progress_fn is not None:
-        progress_fn(0, total_kimg)
+        progress_fn(int(resume_kimg), total_kimg)
     while True:
 
         # Fetch training data.
