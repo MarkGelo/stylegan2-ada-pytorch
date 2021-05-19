@@ -265,7 +265,7 @@ def training_loop(
         print(f'Training for {total_kimg} kimg...')
         print()
     cur_nimg = 0
-    cur_tick = int(resume_kimg * 1000)
+    cur_tick = int(resume_kimg / 4)
     tick_start_nimg = cur_nimg
     tick_start_time = time.time()
     maintenance_time = tick_start_time - start_time
