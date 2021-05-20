@@ -264,7 +264,7 @@ def training_loop(
     if rank == 0:
         print(f'Training for {total_kimg} kimg...')
         print()
-    cur_nimg = int(resume_kimg)
+    cur_nimg = int(resume_kimg * 1000)
     cur_tick = 0
     tick_start_nimg = cur_nimg
     tick_start_time = time.time()
