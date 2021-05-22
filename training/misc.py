@@ -55,14 +55,15 @@ def parse_augment_p_from_log(network_pickle_name):
 
         # Extract the last token of each line for which the second to last token is 'augment'
         # making sure the augment is from the last kimg
+        # should only result in one match
         values = [
             tokens[-1]
             for tokens in lines
-            if len(tokens) > 1 and tokens[-2] == "augment" and int(tokens[-16]) == int(parse_kimg_from_network_name(network_pickle_name) * 1000)
+            if len(tokens) > 1 and tokens[-2] == "augment" and int(float(tokens[3])) == int(parse_kimg_from_network_name(network_pickle_name))
         ]
 
-        if len(values)>0:
-            augment_p = float(values[-1])
+        if len(values) == 1:
+            augment_p = float(values[0])
         else:
             augment_p = 0.0
     else:
